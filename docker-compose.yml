@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  hermes-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "hermes-agent-rtk:latest"
+    restart: unless-stopped
+    command: "gateway run"
+    volumes:
+      - "hermes_data:/opt/data"
+    environment:
+      - "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}"
+      - "TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS}"
+      - "KIMI_API_KEY=${KIMI_API_KEY}"
+      - "DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}"
+      - "DISCORD_HOME_CHANNEL=${DISCORD_HOME_CHANNEL}"
+      - "DISCORD_ALLOWED_USERS=${DISCORD_ALLOWED_USERS}"
+      - "GITHUB_TOKEN=${GITHUB_TOKEN}"
+
+  hermes-dashboard:
+    image: "hermes-agent-rtk:latest"
+    restart: unless-stopped
+    command: "dashboard --host 0.0.0.0 --port 9119 --no-open --insecure"
+    volumes:
+      - "hermes_data:/opt/data"
+    environment:
+      - "SERVICE_FQDN_DASHBOARD_9119=https://delamain.slimourlissene.fr"
+      - "GATEWAY_HEALTH_URL=http://hermes-agent:8642"
+    depends_on:
+      - hermes-agent
+    labels:
+      - "traefik.http.middlewares.hermes-auth.basicauth.users=admin:$2y$05$u/yQU2P6ezqD/DO24ym.p.weFhz4Gi9nqu7CwSpVd//JfVcoRiJfe"
+      - "traefik.http.routers.https-0-fmcd2aj7lx8jkdj3q1jq3ura-hermes-dashboard.middlewares=gzip,hermes-auth"
+      - "traefik.http.routers.hermes-api.rule=Host(`delamain.slimourlissene.fr`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))"
+      - "traefik.http.routers.hermes-api.entrypoints=https"
+      - "traefik.http.routers.hermes-api.tls=true"
+      - "traefik.http.routers.hermes-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.hermes-api.priority=100"
+      - "traefik.http.routers.hermes-api.service=https-0-fmcd2aj7lx8jkdj3q1jq3ura-hermes-dashboard"
+      - "traefik.http.routers.hermes-api.middlewares=gzip"
+
+volumes:
+  hermes_data: null
