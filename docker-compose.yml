@@ -42,4 +42,6 @@ services:
       - "traefik.http.routers.hermes-api.middlewares=gzip"
 
 volumes:
-  hermes_data: null
+  hermes_data:
+    name: "fmcd2aj7lx8jkdj3q1jq3ura_hermes-data"
+    external: true
