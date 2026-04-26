@@ -8,4 +8,4 @@ RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/in
 
 ENV PATH="/root/.local/bin:${PATH}"
 
-RUN rtk init -g hermes
+RUN rtk init -g --agent hermes
